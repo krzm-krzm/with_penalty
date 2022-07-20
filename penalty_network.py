@@ -191,21 +191,22 @@ return_random関数に関して
 def return_random(dic,now_location):
     idou_kanou = []
     idou_list = []
-    for id, info in dic.items():
-        if id[1] > now_location[1] and not id[0] == n:
-            idou_kanou.append(id)
-            idou_list.append(id[0])
+    if noriori[now_location[0]] ==1:
+        for id, info in dic.items():
+            if id[1] > now_location[1] and not id[0] == n:
+                idou_kanou.append(id)
+                idou_list.append(id[0])
 
-    print(idou_kanou)
-    print(idou_list)
-    if not idou_kanou ==[]:
-        randam = random.choice(list(set(idou_list)))
-        print(randam)
-        idou_kanou = np.array(idou_kanou)
-        random_return =tuple(idou_kanou[np.any(idou_kanou == randam, axis=1)][0])
-        print(random_return)
-    else:
-        random_return = (n,T+1)
+        print(idou_kanou)
+        print(idou_list)
+        if not idou_kanou ==[]:
+            randam = random.choice(list(set(idou_list)))
+            print(randam)
+            idou_kanou = np.array(idou_kanou)
+            random_return =tuple(idou_kanou[np.any(idou_kanou == randam, axis=1)][0])
+            print(random_return)
+        else:
+            random_return = (n,T+1)
     return random_return
 
 """

@@ -175,7 +175,12 @@ def syaryo_time_check(Loot):
         syaryo_time = Loot[-1][1] + Distance[0][Loot[-1][0]] - (Loot[0][1] - Distance[0][Loot[0][0]])
     return syaryo_time
 
+def sharing_number_count(Loot):
+    number_count=0
+    for i in Loot:
+        number_count+=noriori[i]
 
+    return  number_count
 
 """
 関数network_updateについて
@@ -189,6 +194,57 @@ def network_update(network, removenode):
         for j in removenode:
             if i[0] == j:
                 network.remove_node(i)
+
+
+'''
+return_random関数に関して
+内容：接続可能なノード一覧からランダムで移動するノード（タプル型）を返す関数
+備考：接続ノード番号をランダムでチョイスしてその中で最も時間が早いノードを返している
+これから：①ピックアップノードが現在地として入力されたとき、乗車客が定員以下の場合は、ピックアップノード+これまで乗せた乗車客のドロップノードの中から選択
+        ②ピックアップノードが現在地かつ乗車客が定員Maxの場合は、乗せている乗車客のドロップノードから選択⇒ここはランダムで選択しなくて良い、最も締め切り時間に近いのを選択
+        ③ドロップノードが現在地のとき、ピックアップノードor今乗せている乗車客のドロップノードの中から選択
+
+        例外処理：移動可能なノードがない場合デポを返す
+
+'''
+
+
+def return_random(dic, now_location):
+    idou_kanou = []
+    idou_list = []
+    if noriori[now_location[0]] == 1:
+        for id, info in dic.items():
+            if id[1] > now_location[1] and not id[0] == n:
+                idou_kanou.append(id)
+                idou_list.append(id[0])
+
+        print(idou_kanou)
+        print(idou_list)
+        if not idou_kanou == []:
+            randam = random.choice(list(set(idou_list)))
+            print(randam)
+            idou_kanou = np.array(idou_kanou)
+            random_return = tuple(idou_kanou[np.any(idou_kanou == randam, axis=1)][0])
+            print(random_return)
+        else:
+            random_return = (n, T + 1)
+    else:
+        for id, info in dic.items():
+            if id[1] > now_location[1] and not id[0] == n:
+                idou_kanou.append(id)
+                idou_list.append(id[0])
+
+        print(idou_kanou)
+        print(idou_list)
+        if not idou_kanou == []:
+            randam = random.choice(list(set(idou_list)))
+            print(randam)
+            idou_kanou = np.array(idou_kanou)
+            random_return = tuple(idou_kanou[np.any(idou_kanou == randam, axis=1)][0])
+            print(random_return)
+        else:
+            random_return = (n, T + 1)
+    return random_return
 
 if __name__ == '__main__':
     FILENAME = 'darp01EX.txt'
@@ -378,55 +434,11 @@ if __name__ == '__main__':
     print(loot)
 
     kanryo_node = []
+    pick_kanryo_node =[]
 
-    while True:
-        genzaichi = (0, 0)
-        old_genzaichi = genzaichi
-        while True:
-            setuzoku_Node = setuzoku_node_list2(G.adj[genzaichi], genzaichi, old_genzaichi)
-            '''
-                if not setuzoku_Node == (n,T+1) and noriori[setuzoku_Node[0]] ==-1 and syaryo_time_check(loot[0]) >Syaryo_max_time:
-                loot[0].pop()
-                loot[0].pop()
+    test = return_random(G.adj[(47, 589)], (47, 589))
+    print(test)
 
-                break    
-            '''
+    ru_to =[2,3,5]
 
-            if setuzoku_Node == (n, T + 1):
-                while True:
-                    if syaryo_time_check(loot[main_loop]) > Syaryo_max_time:
-                        loot[main_loop].pop()
-                        loot[main_loop].pop()
-                        kanryo_node.pop()
-                        loot[main_loop].pop()
-                        loot[main_loop].pop()
-                        kanryo_node.pop()
-                    else:
-                        break
-                break
-
-            kanryo_node.append(setuzoku_Node[0])
-
-            old_genzaichi = genzaichi
-            genzaichi = setuzoku_Node
-
-            loot[main_loop].append(genzaichi)
-
-            genzaichi = genzaichi_update(genzaichi)
-            loot[main_loop].append(genzaichi)
-
-            # if main_loop == 3:
-            #    break
-
-        print(loot[main_loop])
-        print(loot)
-        print(syaryo_time_check(loot[main_loop]))
-        print(kanryo_node)
-        network_update(G, kanryo_node)
-        main_loop += 1
-        kanryo_node = []
-        if main_loop == len(loot):
-            break
-    #nx.draw_networkx_nodes(G, pos, node_size=10, alpha=1, node_color='blue')
-    #nx.draw_networkx_edges(G, pos, width=1, edge_color=c_edge)
-    #plt.show()
+    print(sharing_number_count(ru_to))
