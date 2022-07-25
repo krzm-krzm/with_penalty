@@ -412,6 +412,6 @@ idou_kanou=[]
     '''
 
 
-    test = return_random(G.adj[(47, 589)],(47, 589))
-    print(test)
+    #test = return_random(G.adj[(47, 589)],(47, 589))
+    #print(test)
 

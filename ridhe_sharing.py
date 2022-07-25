@@ -4,6 +4,7 @@ import networkx as nx
 import math
 from itertools import product
 import matplotlib.pyplot as plt
+import random
 
 
 def distance(x1, x2, y1, y2):
@@ -157,12 +158,6 @@ def check_node(next_location_id, now_location):
     return flag
 
 
-def saitan(dic):
-    min_node = min(dic)
-    min_weight = list(dic[min_node])[0]
-    return min_node, min_weight
-
-
 def genzaichi_update(tup):
     tup_new = list(tup)
     tup_new[1] = tup_new[1] + d
@@ -181,6 +176,14 @@ def sharing_number_count(Loot):
         number_count+=noriori[i]
 
     return  number_count
+
+def update_pick_node(next_node,pick_list):
+    if noriori[next_node[0]] ==1:
+        pick_list.append(next_node[0]+Request)
+    else:
+        pick_list.remove(next_node[0])
+
+    return pick_list
 
 """
 関数network_updateについて
@@ -209,14 +212,62 @@ return_random関数に関して
 '''
 
 
-def return_random(dic, now_location):
+def return_random(dic, now_location,capacity,picking_list):
     idou_kanou = []
     idou_list = []
-    if noriori[now_location[0]] == 1:
+    if noriori[now_location[0]] == 1 or noriori[now_location[0]] ==0:
+        for id, info in dic.items():
+            if id[1] > now_location[1] and not id[0] == n:
+                if noriori[id[0]] ==1:
+                    idou_kanou.append(id)
+                    idou_list.append(id[0])
+                else:
+                    if id[0] in  picking_list:
+                        idou_kanou.append(id)
+                        idou_list.append(id[0])
+
+        print(idou_kanou)
+        print(idou_list)
+        if not idou_kanou == []:
+            randam = random.choice(list(set(idou_list)))
+            print(randam)
+            idou_kanou = np.array(idou_kanou)
+            random_return = tuple(idou_kanou[np.any(idou_kanou == randam, axis=1)][0])
+            print(random_return)
+        else:
+            random_return = (n, T + 1)
+    else:
         for id, info in dic.items():
             if id[1] > now_location[1] and not id[0] == n:
                 idou_kanou.append(id)
                 idou_list.append(id[0])
+
+        print(idou_kanou)
+        print(idou_list)
+        if not idou_kanou == []:
+            randam = random.choice(list(set(idou_list)))
+            print(randam)
+            idou_kanou = np.array(idou_kanou)
+            random_return = tuple(idou_kanou[np.any(idou_kanou == randam, axis=1)][0])
+            print(random_return)
+        else:
+            random_return = (n, T + 1)
+    return random_return
+
+
+def return_saitan(dic, now_location,capacity,picking_list):
+    idou_kanou = []
+    idou_list = []
+    if noriori[now_location[0]] == 1 or noriori[now_location[0]] ==0:
+        for id, info in dic.items():
+            if id[1] > now_location[1] and not id[0] == n:
+                if noriori[id[0]] ==1:
+                    idou_kanou.append(id)
+                    idou_list.append(id[0])
+                else:
+                    if id[0] in  picking_list:
+                        idou_kanou.append(id)
+                        idou_list.append(id[0])
 
         print(idou_kanou)
         print(idou_list)
@@ -263,7 +314,7 @@ if __name__ == '__main__':
 
     Time_expand = 1
 
-    kakucho =20
+    kakucho =40
 
     G = nx.Graph()  # ノード作成
     for i in range(n):
@@ -434,11 +485,67 @@ if __name__ == '__main__':
     print(loot)
 
     kanryo_node = []
-    pick_kanryo_node =[]
+    pick_now_node_list =[]
 
-    test = return_random(G.adj[(47, 589)], (47, 589))
-    print(test)
+
+    #test = return_random(G.adj[(47, 589)], (47, 589))
+    #print(test)
 
     ru_to =[2,3,5]
 
     print(sharing_number_count(ru_to))
+
+    while True:
+        genzaichi = (0, 0)
+        old_genzaichi = genzaichi
+        capa =0
+        while True:
+            setuzoku_Node = return_random(G.adj[genzaichi], genzaichi,capa,pick_now_node_list)
+            pick_now_node_list = update_pick_node(setuzoku_Node,pick_now_node_list)
+            if noriori[setuzoku_Node[0]] ==1:
+                capa +=1
+            else:
+                capa-=1
+            '''
+                if not setuzoku_Node == (n,T+1) and noriori[setuzoku_Node[0]] ==-1 and syaryo_time_check(loot[0]) >Syaryo_max_time:
+                loot[0].pop()
+                loot[0].pop()
+
+                break    
+            '''
+
+            if setuzoku_Node == (n, T + 1):
+                while True:
+                    if syaryo_time_check(loot[main_loop]) > Syaryo_max_time:
+                        loot[main_loop].pop()
+                        loot[main_loop].pop()
+                        kanryo_node.pop()
+                        loot[main_loop].pop()
+                        loot[main_loop].pop()
+                        kanryo_node.pop()
+                    else:
+                        break
+                break
+
+            kanryo_node.append(setuzoku_Node[0])
+
+            old_genzaichi = genzaichi
+            genzaichi = setuzoku_Node
+
+            loot[main_loop].append(genzaichi)
+
+            genzaichi = genzaichi_update(genzaichi)
+            loot[main_loop].append(genzaichi)
+
+            # if main_loop == 3:
+            #    break
+
+        print(loot[main_loop])
+        print(loot)
+        print(syaryo_time_check(loot[main_loop]))
+        print(kanryo_node)
+        network_update(G, kanryo_node)
+        main_loop += 1
+        kanryo_node = []
+        if main_loop == len(loot):
+            break
